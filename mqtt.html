@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MQTT Universal Subscriber</title>
+</head>
+<body>
+  <h2>MQTT Live Monitor</h2>
+  <pre id="log"></pre>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const log = (msg) => {
+      const logElem = document.getElementById("log");
+      logElem.textContent += msg + "\n";
+      logElem.scrollTop = logElem.scrollHeight;
+      console.log(msg);
+    };
+
+    const client = mqtt.connect("ws://192.168.0.5:8083");
+
+    client.on("connect", () => {
+      log("[MQTT] Connected");
+      client.subscribe("#", { qos: 0 }, (err) => {
+        if (err) {
+          log("[MQTT] Subscribe error: " + err.message);
+        } else {
+          log("[MQTT] Subscribed to all topics (#)");
+        }
+      });
+    });
+
+    // Bei eingehender Nachricht
+    client.on("message", (topic, message) => {
+      log(`[MQTT] Topic: ${topic}, Message: ${message.toString()}`);
+    });
+
+    client.on("error", (err) => {
+      log("[MQTT] Error: " + err.message);
+    });
+
+    client.on("reconnect", () => {
+      log("[MQTT] Reconnecting...");
+    });
+
+    client.on("close", () => {
+      log("[MQTT] Connection closed");
+    });
+  </script>
+</body>
+</html>
